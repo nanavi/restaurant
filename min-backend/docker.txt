@@ -1,0 +1,1 @@
+docker run -e DS_LICENSE=accept -e JVM_EXTRA_OPTS=-Xms2048mb --name test-cassandra -d -p 9042:9042 datastax/dse-server:6.8.1

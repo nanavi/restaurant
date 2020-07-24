@@ -1,0 +1,78 @@
+version: "3"
+services:
+  node1:
+    image: datastax/dse-server:6.8.1
+    container_name: DSE-6_node1
+    hostname: node1
+    networks:
+      dc1ring:
+        ipv4_address: 172.30.0.2
+    environment:
+      - DS_LICENSE=accept
+      - SEEDS=node1
+      - CLUSTER_NAME=dse1_cluster
+      - DC=DC1
+      - RACK=RAC1
+      - JVM_EXTRA_OPTS=-Xms2000mb
+    expose:
+      - 7000
+      - 7001
+      - 7199
+      - 9042
+      - 9142
+    ports:
+      - 9042:9042
+  node2:
+    image: datastax/dse-server:6.8.1
+    container_name: DSE-6_node2
+    hostname: node2
+    networks:
+      dc1ring:
+        ipv4_address: 172.30.0.3
+    environment:
+      - DS_LICENSE=accept
+      - SEEDS=node1
+      - CLUSTER_NAME=dse1_cluster
+      - DC=DC2
+      - RACK=RAC1
+      - JVM_EXTRA_OPTS=-Xms2g
+    expose:
+      - 7000
+      - 7001
+      - 7199
+      - 9042
+      - 9142
+    ports:
+      - 9043:9042
+    depends_on:
+      - node1
+  node3:
+    image: datastax/dse-server:6.8.1
+    container_name: DSE-6_node3
+    hostname: node3
+    networks:
+      dc1ring:
+        ipv4_address: 172.30.0.4
+    environment:
+      - DS_LICENSE=accept
+      - SEEDS=node1
+      - CLUSTER_NAME=dse1_cluster
+      - DC=DC1
+      - RACK=RAC1
+      - JVM_EXTRA_OPTS=-Xms2g
+    expose:
+      - 7000
+      - 7001
+      - 7199
+      - 9042
+      - 9142
+    ports:
+      - 9044:9042
+    depends_on:
+      - node1
+networks:
+  dc1ring:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/1

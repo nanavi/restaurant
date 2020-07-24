@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useMemo } from "react";
+import { Route, BrowserRouter as Router, Switch, Link } from "react-router-dom";
 
-function App() {
+import { UserContext } from "./UserContext";
+import Products from "./components/Products";
+import Ani from "./components/Ani";
+import Login from "./components/Login";
+
+export default function App() {
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("session")));
+  const value = useMemo(() => ({ user, setUser }), [user, setUser]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <nav>
+        <ul>
+          <li>
+            <Link to="/test/Products">test products</Link>
+          </li>
+          <li>
+            <Link to="/test/Ani">test ani-api</Link>
+          </li>
+          <li>
+            <Link to="/test/Login">test login</Link>
+          </li>
+        </ul>
+      </nav>
+      <div className="App">
+        <p>User:</p>
+        <pre>{JSON.stringify(user, null, 2)}</pre>
+        <h1>Restaurante xyz </h1>
+      </div>
+      <UserContext.Provider value={value}>
+        <Switch>
+          <Route path="/test/Ani" component={Ani}></Route>
+          <Route path="/test/Products" component={Products}></Route>
+          <Route path="/test/Login" component={Login}></Route>
+        </Switch>
+      </UserContext.Provider>
+    </Router>
   );
 }
 
-export default App;
+// export default App;

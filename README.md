@@ -19,7 +19,7 @@ docker-compose up -d
 
 ### Instalacion de API
 
-En [Rest API](/min-backend), Puerto por defecto 5000
+En [Rest API](/min-backend), puerto por defecto 5000
 
 ```
 npm install
@@ -28,7 +28,7 @@ npm start
 
 ### Instalacion de UI front-server
 
-En [UI](/), Puerto por defecto 3000
+En ruta principal, puerto por defecto 3002
 
 ```
 npm install

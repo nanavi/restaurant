@@ -15,12 +15,14 @@ export const useFetch = (url) => {
       .then((res) => res.json())
       .then((data) => {
         if (isCurrent.current) {
-          setState({ data: data.data, loading: false });
+          console.log("isCurrent", data.length, data);
+          setState({ data: data, loading: false });
         }
       })
       .catch((err) => {
         console.log(err);
       });
   }, [url, setState]);
+  // console.log("Return", state);
   return state;
 };

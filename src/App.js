@@ -1,10 +1,14 @@
 import React, { useState, useMemo } from "react";
 import { Route, BrowserRouter as Router, Switch, Link } from "react-router-dom";
-
 import { UserContext } from "./UserContext";
 import Products from "./components/Products";
 import Ani from "./components/Ani";
-import Login from "./components/Login";
+import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
+import Menu from "./components/Menu";
+import Checkout from "./components/Checkout";
+import AppHeaderBar from "./components/AppHeaderBar";
+import Grid from "@material-ui/core/Grid";
 
 export default function App() {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("session")));
@@ -12,29 +16,23 @@ export default function App() {
 
   return (
     <Router>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/test/Products">test products</Link>
-          </li>
-          <li>
-            <Link to="/test/Ani">test ani-api</Link>
-          </li>
-          <li>
-            <Link to="/test/Login">test login</Link>
-          </li>
-        </ul>
-      </nav>
-      <div className="App">
-        <p>User:</p>
-        <pre>{JSON.stringify(user, null, 2)}</pre>
-        <h1>Restaurante xyz </h1>
-      </div>
       <UserContext.Provider value={value}>
+        <Grid container direction="column">
+          <Grid item>
+            <AppHeaderBar />
+          </Grid>
+          {/* <div className="App">
+            <p>User:</p>
+            <pre>{JSON.stringify(user, null, 2)}</pre>
+          </div> */}
+        </Grid>
         <Switch>
           <Route path="/test/Ani" component={Ani}></Route>
           <Route path="/test/Products" component={Products}></Route>
-          <Route path="/test/Login" component={Login}></Route>
+          <Route path="/test/SignIn" component={SignIn}></Route>
+          <Route path="/test/SignUp" component={SignUp}></Route>
+          <Route path="/Checkout" component={Checkout}></Route>
+          <Route exact path="/" component={Menu}></Route>
         </Switch>
       </UserContext.Provider>
     </Router>

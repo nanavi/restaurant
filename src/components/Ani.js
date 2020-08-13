@@ -20,7 +20,7 @@ const show_kitsu_data = (data) => {
             {ani.attributes.titles.ja_jp}
           </p>
           <p>poster</p>
-          <img src={ani.attributes.posterImage.medium} />
+          {/* <img src={ani.attributes.posterImage.medium} /> */}
           <p>
             synopsis: <br />
             {ani.attributes.synopsis}

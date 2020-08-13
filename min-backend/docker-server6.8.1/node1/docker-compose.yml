@@ -1,0 +1,22 @@
+version: '3'
+services:
+  dse-s1:
+    image: datastax/dse-server:6.8.1
+    container_name: dse-s1
+    hostname: dse-s1
+      #volumes:
+      #- ./local-db:/var/lib/cassandra
+      #      - ./config:/config
+    environment:
+      - DS_LICENSE=accept
+      - BROADCAST_ADDRESS=192.168.0.10
+      - CLUSTER_NAME=data_center_1
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=1024M
+      - JVM_OPTS=-Xms512M -Xmx512M
+      - DC=DC1
+      - RACK=RAC1
+    ports:
+      - '9042:9042'
+      - '7000:7000'
+

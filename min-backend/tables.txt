@@ -1,0 +1,4 @@
+insert into table_by_branch(branch,id,available,capacity) values(1,uuid(),true,100);
+insert into table_by_branch(branch,id,available,capacity) values(2,uuid(),true,150);
+insert into table_by_branch(branch,id,available,capacity) values(3,uuid(),true,90);
+insert into table_by_branch(branch,id,available,capacity) values(4,uuid(),true,200);

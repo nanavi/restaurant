@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useContext } from "react";
-import { UserContext } from "../UserContext";
+import React, { useState /* , useEffect, useContext */ } from "react";
+// import { UserContext } from "../UserContext";
 import { useFetch } from "../utils/useFetch";
 
 const show_products = (products) => {
   return (
     <div>
       {products.map((p) => (
-        <div>
+        <div key={p.id}>
           <p>Sucursal: {p.branch}</p>
+          <p>Id: {p.id}</p>
           <p>Categoria: {p.category}</p>
           <p>Descripcion: {p.description}</p>
           <p>Precio: {p.price}</p>
           <p>Stock: {p.stock}</p>
+          <p>Imagen</p>
+          {/* <img src={p.image} width="40%" height="40%" /> */}
           <br></br>
         </div>
       ))}
@@ -28,19 +31,20 @@ const options_page = (n) => {
 };
 
 export default function Products() {
-  const { user } = useContext(UserContext);
-  const [branch, setBranch] = useState(() => {
-    return localStorage.getItem("branch") === null
-      ? 0
-      : JSON.parse(localStorage.getItem("branch"));
-  });
-  const { products, loading } = useFetch(
+  // const { user } = useContext(UserContext);
+  // const [branch, setBranch] = useState(() => {
+  //   return localStorage.getItem("branch") === null
+  //     ? 1
+  //     : JSON.parse(localStorage.getItem("branch"));
+  // });
+  const [branch, setBranch] = useState(1);
+  const { data, loading } = useFetch(
     `http://localhost:5555/${branch}/products`
   );
 
-  useEffect(() => {
-    localStorage.setItem("branch", JSON.stringify(branch));
-  }, [branch]);
+  // useEffect(() => {
+  //   localStorage.setItem("branch", JSON.stringify(branch));
+  // }, [branch]);
 
   if (loading) return <div> Loading... </div>;
 
@@ -57,7 +61,7 @@ export default function Products() {
         <option value=" ">Elige sucursal</option>
         {options_page(4)}
       </select>
-      {show_products(products)}
+      {show_products(data)}
     </div>
   );
 }

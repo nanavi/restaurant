@@ -1,0 +1,10 @@
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Andres','Agudelo Echeverry','1999-11-03','a_agu@gmail.com','1651');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Jose','Alvarez Puerta','1962-04-04','jo_al@gmail.com','4564');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Juan','Arango Alvarez','1972-05-03','ar_al@gmail.com','72857');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Joaquin','Cardenas Chaverra','1989-05-12','joa_car@gmail.com','576545');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Luz','Porras Taborda','2000-09-11','luz_por@gmail.com','2752');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Jhuliana','Lopera Zapata','1955-05-22','jhu_lo@gmail.com','75468');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Luis','Lujan Sanchez','1964-08-03','luj_san@gmail.com','72857');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Eliana','Soto Zapata','1981-02-09','el_soto@gmail.com','54667');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Maria','Mora Gonzalez','1997-01-06','mar_mor@gmail.com','7287');
+insert into customer_by_id(id,first_name,last_name,birth_date,email,password) values(uuid(), 'Ruth','Agudelo Echeverry','1996-05-01','ru_agu@gmail.com','5746');

@@ -26,7 +26,7 @@ npm install
 npm start
 ```
 
-### Instalacion de UI front-server
+### Instalacion de servidor UI
 
 En ruta principal, puerto por defecto 3002
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Route, BrowserRouter as Router, Switch, Link } from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import { UserContext } from "./UserContext";
 import Ani from "./components/Ani";
 import SignIn from "./components/SignIn";

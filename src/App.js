@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Route, BrowserRouter as Router, Switch, Link } from "react-router-dom";
 import { UserContext } from "./UserContext";
-import Products from "./components/Products";
 import Ani from "./components/Ani";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
@@ -28,7 +27,6 @@ export default function App() {
         </Grid>
         <Switch>
           <Route path="/test/Ani" component={Ani}></Route>
-          <Route path="/test/Products" component={Products}></Route>
           <Route path="/test/SignIn" component={SignIn}></Route>
           <Route path="/test/SignUp" component={SignUp}></Route>
           <Route path="/Checkout" component={Checkout}></Route>

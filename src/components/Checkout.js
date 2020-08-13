@@ -1,17 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
+import { UserContext } from "../UserContext";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
 import Paper from "@material-ui/core/Paper";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
 import Button from "@material-ui/core/Button";
 import Link from "@material-ui/core/Link";
 import Typography from "@material-ui/core/Typography";
-import AddressForm from "./AddressForm";
-import PaymentForm from "./PaymentForm";
 import Review from "./Review";
 
 function Copyright() {
@@ -64,31 +58,60 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const steps = ["Shipping address", "Payment details", "Review your order"];
-
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return <AddressForm />;
-    case 1:
-      return <PaymentForm />;
-    case 2:
-      return <Review />;
-    default:
-      throw new Error("Unknown step");
-  }
-}
-
-export default function Checkout() {
+export default function Checkout(props) {
   const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(0);
+  const { user, setUser } = useContext(UserContext);
+  console.log("User in Checktout:", user);
+  const [cart, setCart] = React.useState(props.location.state.cart);
+  const date = new Date();
+  console.log("cart", cart);
+  console.log("props", props);
 
-  const handleNext = () => {
-    setActiveStep(activeStep + 1);
+  const getBranch = () => {
+    let cbr = -1;
+    if (cart) {
+      cbr = cart[0].branch;
+      for (let i = 1; i < cart.length; ++i) {
+        if (cart[i].branch !== cbr) return -1;
+      }
+    }
+    return cbr;
   };
 
-  const handleBack = () => {
-    setActiveStep(activeStep - 1);
+  const PlaceOrder = async () => {
+    console.log("placing cart", cart);
+    const order = {
+      id_customer: user.id,
+      name_customer: user.username,
+      products: cart,
+      total: getTotal(),
+      date: date,
+      branch: getBranch(),
+    };
+    try {
+      let res = await fetch("http://localhost:5000/add-facture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order),
+      });
+      let res_ = await res.json();
+      console.log(res_);
+      if (res_.error) throw res_.error;
+      //   setUser(res_.user);
+    } catch (err) {
+      console.log(err);
+      console.log(order);
+    }
+  };
+
+  const getTotal = () => {
+    let total = 0;
+    if (cart) {
+      for (let i = 0; i < cart.length; ++i) {
+        total += cart[i].price * cart[i].quantity;
+      }
+    }
+    return total;
   };
 
   return (
@@ -97,47 +120,30 @@ export default function Checkout() {
       <main className={classes.layout}>
         <Paper className={classes.paper}>
           <Typography component="h1" variant="h4" align="center">
-            Checkout
+            Resumen de Ordenes
           </Typography>
-          <Stepper activeStep={activeStep} className={classes.stepper}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
           <React.Fragment>
-            {activeStep === steps.length ? (
-              <React.Fragment>
-                <Typography variant="h5" gutterBottom>
-                  Thank you for your order.
-                </Typography>
-                <Typography variant="subtitle1">
-                  Your order number is #2001539. We have emailed your order
-                  confirmation, and will send you an update when your order has
-                  shipped.
-                </Typography>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                {getStepContent(activeStep)}
-                <div className={classes.buttons}>
-                  {activeStep !== 0 && (
-                    <Button onClick={handleBack} className={classes.button}>
-                      Back
-                    </Button>
-                  )}
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleNext}
-                    className={classes.button}
-                  >
-                    {activeStep === steps.length - 1 ? "Place order" : "Next"}
-                  </Button>
-                </div>
-              </React.Fragment>
-            )}
+            {/* {getStepContent(activeStep)} */}
+            <Review
+              cart={cart}
+              total={getTotal()}
+              date={date}
+              branch={getBranch()}
+              username={user ? user.username : "OFFLINE"}
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  console.log("click");
+                  PlaceOrder();
+                }}
+                className={classes.button}
+              >
+                {"Place order"}
+              </Button>
+            </div>
           </React.Fragment>
         </Paper>
         <Copyright />

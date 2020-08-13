@@ -2,14 +2,14 @@ const express = require("express");
 const cassandra = require("cassandra-driver");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
 const bcrypt = require("bcrypt");
+
+const { Uuid, Tuple } = cassandra.types;
 const saltRounds = 10;
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-const Uuid = cassandra.types.Uuid;
 
 const PORT = process.env.PORT || 5000;
 
@@ -367,6 +367,71 @@ app.get("/:customer/reservation", async (req, res) => {
   }
 });
 
+app.post("/add-facture/", async (req, res) => {
+  const {
+    id_customer,
+    name_customer,
+    products,
+    total,
+    date,
+    branch,
+  } = req.body;
+  id_facture = Uuid.random().toString();
+  id_vale = Uuid.random().toString();
+  const query = `insert into factura_by_id (
+    id, 
+    id_customer, 
+    name_customer, 
+    products, 
+    total, 
+    date, 
+    id_vale, 
+    branch)
+  values (?, ?, ?, ?, ?, ?, ?, ?)`;
+  let productsTupled = [];
+  for (let i = 0; i < products.length; ++i) {
+    const { description, quantity, price } = products[i];
+    productsTupled.push(
+      new Tuple(description, quantity, price, quantity * price)
+    );
+  }
+  console.log("set of tuples", productsTupled);
+  const params = [
+    id_facture,
+    id_customer,
+    name_customer,
+    productsTupled,
+    total,
+    Date.now(),
+    id_vale,
+    branch,
+  ];
+  console.log("params", params);
+  try {
+    result = await client.execute(query, params, { prepare: true });
+    res.json({ result: true, error: null });
+  } catch (err) {
+    console.log(err);
+    res.json({ hello: true, error: null });
+  }
+  // products {()}
+  /* insert into factura_by_id(id, id_customer, name_customer, products, total, date, id_vale, branch) 
+  values (uuid(), uuid(), 'TEST', {('product1', 12, 1.2, 14.3)}, 15, toTimeStamp(now()), uuid(), 1); */
+  // console.log("BODY----------------------", req.body);
+});
+
+/* create table factura_by_id(
+    id uuid,
+    id_customer uuid,
+    name_customer text,
+    products set<frozen<tuple<text,int,double, double>>>,//producto, cantidad, precio, semitotal
+    total int,
+    date timestamp,
+    id_vale uuid,
+    branch int,
+    PRIMARY KEY(id)
+);
+ */
 /* **************************************************EXPERIMENTAL******************************************** */
 
 /* Customers */

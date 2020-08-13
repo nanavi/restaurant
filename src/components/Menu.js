@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link as Rlink } from "react-router-dom";
 import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
 import CameraIcon from "@material-ui/icons/PhotoCamera";
@@ -75,7 +76,7 @@ export default function Menu() {
   //   console.log(category ? `category` : `${category}`);
 
   const add_to_cart = (pbranch, pcategory, id, stock, price, description) => {
-    if (cart.length == 0) {
+    if (cart.length === 0) {
       setCart([
         ...cart,
         {
@@ -416,9 +417,8 @@ export default function Menu() {
                   <Button
                     variant="outlined"
                     color="secondary"
-                    onClick={() => {
-                      setCategory("Bebida");
-                    }}
+                    component={Rlink}
+                    to={{ pathname: "/Checkout", state: { cart } }}
                   >
                     Comprar seleccionados
                   </Button>

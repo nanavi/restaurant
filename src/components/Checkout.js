@@ -88,6 +88,7 @@ export default function Checkout(props) {
       date: date,
       branch: getBranch(),
     };
+    console.log("order", order);
     try {
       let res = await fetch("http://localhost:5000/add-facture", {
         method: "POST",

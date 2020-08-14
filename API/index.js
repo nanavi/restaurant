@@ -3,6 +3,7 @@ const cassandra = require("cassandra-driver");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const { json } = require("express");
 
 const { Uuid, Tuple } = cassandra.types;
 const saltRounds = 10;
@@ -10,7 +11,6 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
-
 const PORT = process.env.PORT || 5000;
 
 const client = new cassandra.Client({
@@ -22,50 +22,15 @@ const client = new cassandra.Client({
 const generate_hash = (passwd) => {
   const salt = bcrypt.genSaltSync(saltRounds);
   const hash = bcrypt.hashSync(passwd, salt);
-  // console.log(hash);
   return hash;
 };
 
 const compare_hash = async (passwd, hash) => {
   console.log("CHECK LOG IN");
-  // let pass = false;
   const match = await bcrypt.compare(passwd, hash);
   console.log("match?:", match);
-  // bcrypt.compare(passwd, hash, function (err, res) {
-  //   console.log("Result_compare_hash:", res);
-  //   if (res) {
-  //     console.log("PASS");
-  //     pass = true;
-  //   } else {
-  //     console.log("FAIL");
-  //     pass = false;
-  //   }
-  // });
   return match;
 };
-
-const addUser = async (user) => {
-  const { firstName, lastName, email, password } = user;
-  const hashed_password = generate_hash(password);
-  const uid = Uuid.random().toString();
-  const query = `insert into customer_by_id (id, email, first_name, last_name, password) values (?, ?, ?, ?, ?)`;
-  const params = [uid, email, firstName, lastName, hashed_password];
-  try {
-    result = await client.execute(query, params, { prepare: true });
-    return true;
-  } catch (err) {
-    console.log(err);
-    return false;
-  }
-};
-// insert admin
-// admin = "admin";
-// addUser({
-//   firstName: admin,
-//   lastName: admin,
-//   email: admin,
-//   password: admin,
-// });
 
 // customer by id
 app.get("/email/:email/", async (req, res) => {
@@ -160,6 +125,7 @@ app.post("/:branch/add-product", async (req, res) => {
     console.log(result);
   }
 });
+
 /* update stock */
 app.put("/:branch/update-product-stock/:category/:id", async (req, res) => {
   const { branch, category, id } = req.params;
@@ -176,27 +142,6 @@ app.put("/:branch/update-product-stock/:category/:id", async (req, res) => {
     console.log(err);
   }
 });
-
-/* // metodo para obtener un producto que sea de una branch y categoria especifica
-app.get("/:branch/products/:category", async (req, res) => {
-  //        |               |
-  //        V           ____|
-  const { branch, category } = req.params; //obtiene esos parametros del url
-  const query =
-    "select * from product_by_branch where branch = ? and category = ?";
-  const params = [branch, category];
-  try {
-    // realizar query
-    result = await client.execute(query, params, { prepare: true });
-    // manda al cliente el resultados de las columnas en formator JSON
-    res.json(result.rows);
-    console.log(result);
-  } catch (err) {
-    // muestra error si en JSON tmbn
-    res.json(err);
-    console.log(err);
-  }
-}); */
 
 app.delete("/:branch/del-product/:category/", async (req, res) => {
   const { branch, category } = req.params;
@@ -217,54 +162,6 @@ app.delete("/:branch/del-product/:category/", async (req, res) => {
   }
 });
 
-/* SIGN IN AND SIGN UP */
-app.post("/signIn", async (req, res) => {
-  console.log(req.body);
-  const { email, password } = req.body;
-  console.log("input_email:", email, "input_password:", password);
-  const query = `select id, email, first_name, password FROM customer_by_email WHERE email = ?`;
-  const params = [email];
-  try {
-    result = await client.execute(query, params, { prepare: true });
-    console.log("len:", result.rows.length);
-    if (result.rows.length === 0) throw "user not found";
-    pass = await compare_hash(password, result.rows[0].password);
-    if (!pass) throw "incorrect password";
-    res.json({
-      user: {
-        id: result.rows[0].id,
-        email: result.rows[0].email,
-        username: result.rows[0].first_name,
-      },
-      error: null,
-    });
-  } catch (err) {
-    console.log(err);
-    res.json({ error: err, user: null });
-  }
-});
-app.post("/signUp", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-  const hashed_password = generate_hash(password);
-  const uid = Uuid.random().toString();
-  const query = `insert into customer_by_id (id, email, first_name, last_name, password) values (?, ?, ?, ?, ?)`;
-  const params = [uid, email, firstName, lastName, hashed_password];
-  try {
-    result = await client.execute(query, params, { prepare: true });
-    console.log(result);
-    res.json({
-      user: {
-        id: uid,
-        email: email,
-        username: firstName,
-      },
-      error: null,
-    });
-  } catch (err) {
-    console.log(err);
-    res.json({ error: err, user: null });
-  }
-});
 /* **************************************************EXPERIMENTAL******************************************** */
 app.get("/:branch/facturas", async (req, res) => {
   const { branch } = req.params;
@@ -367,6 +264,92 @@ app.get("/:customer/reservation", async (req, res) => {
   }
 });
 
+//producto, cantidad, precio, semitotal
+
+/* **************************************************EXPERIMENTAL******************************************** */
+
+/* 
+POST REQUESTS 
+* SignIn (customer)
+* SignUp (customer)
+* SignIn (employee) NO 
+* SignUp (employee) NO
+* SignIn (employee) NO
+* Facture           YES
+    - update stocks NO
+*/
+/* SIGN IN AND SIGN UP */
+app.post("/signIn", async (req, res) => {
+  console.log(req.body);
+  const { email, password } = req.body;
+  console.log("input_email:", email, "input_password:", password);
+  const query = `select id, email, first_name, password FROM customer_by_email WHERE email = ?`;
+  const params = [email];
+  try {
+    result = await client.execute(query, params, { prepare: true });
+    console.log("len:", result.rows.length);
+    if (result.rows.length === 0) throw "user not found";
+    pass = await compare_hash(password, result.rows[0].password);
+    if (!pass) throw "incorrect password";
+    res.json({
+      user: {
+        id: result.rows[0].id,
+        email: result.rows[0].email,
+        username: result.rows[0].first_name,
+      },
+      error: null,
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({ error: err, user: null });
+  }
+});
+
+app.post("/signUp", async (req, res) => {
+  const { firstName, lastName, email, password } = req.body;
+  const hashed_password = generate_hash(password);
+  const uid = Uuid.random().toString();
+  const query = `insert into customer_by_id (id, email, first_name, last_name, password) values (?, ?, ?, ?, ?)`;
+  const params = [uid, email, firstName, lastName, hashed_password];
+  try {
+    result = await client.execute(query, params, { prepare: true });
+    console.log(result);
+    res.json({
+      user: {
+        id: uid,
+        email: email,
+        username: firstName,
+      },
+      error: null,
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({ error: err, user: null });
+  }
+});
+
+/* FACTURE */
+
+//helper function
+// const update_stocks = async (products) => {
+//   let queries = [];
+//   for (let i = 0; i < products.length; ++i) {
+//     let { stock, branch, category, id, quantity } = products[i];
+//     queries.push({
+//       query:
+//         "UPDATE product_by_branch SET stock = ? where branch = ? and category = ? and id = ?",
+//       params: [stock - quantity, branch, category, id],
+//     });
+//   }
+//   try {
+//     result = await client.execute(queries, { prepare: true });
+//     console.log(result);
+//     return { result: "Product stock updated", error: null };
+//   } catch (err) {
+//     return { result: null, error: err };
+//   }
+// };
+
 app.post("/add-facture/", async (req, res) => {
   const {
     id_customer,
@@ -378,7 +361,10 @@ app.post("/add-facture/", async (req, res) => {
   } = req.body;
   id_facture = Uuid.random().toString();
   id_vale = Uuid.random().toString();
-  const query = `insert into factura_by_id (
+  let queries = [];
+  let productsTupled = [];
+
+  const query1 = `insert into factura_by_id (
     id, 
     id_customer, 
     name_customer, 
@@ -388,15 +374,28 @@ app.post("/add-facture/", async (req, res) => {
     id_vale, 
     branch)
   values (?, ?, ?, ?, ?, ?, ?, ?)`;
-  let productsTupled = [];
+
   for (let i = 0; i < products.length; ++i) {
-    const { description, quantity, price } = products[i];
+    let {
+      description,
+      quantity,
+      price,
+      stock,
+      branch,
+      category,
+      id,
+    } = products[i];
     productsTupled.push(
       new Tuple(description, quantity, price, quantity * price)
     );
+    queries.push({
+      query:
+        "UPDATE product_by_branch SET stock = ? where branch = ? and category = ? and id = ?",
+      params: [stock - quantity, branch, category, id],
+    });
   }
   console.log("set of tuples", productsTupled);
-  const params = [
+  const params1 = [
     id_facture,
     id_customer,
     name_customer,
@@ -406,35 +405,29 @@ app.post("/add-facture/", async (req, res) => {
     id_vale,
     branch,
   ];
-  console.log("params", params);
+  // console.log("params", params1);
+  queries.unshift({ query: query1, params: params1 });
+  console.log(queries);
   try {
-    result = await client.execute(query, params, { prepare: true });
+    result = await client.batch(queries, { prepare: true });
     res.json({ result: true, error: null });
   } catch (err) {
     console.log(err);
     res.json({ hello: true, error: null });
   }
-  // products {()}
-  /* insert into factura_by_id(id, id_customer, name_customer, products, total, date, id_vale, branch) 
-  values (uuid(), uuid(), 'TEST', {('product1', 12, 1.2, 14.3)}, 15, toTimeStamp(now()), uuid(), 1); */
-  // console.log("BODY----------------------", req.body);
 });
 
-/* create table factura_by_id(
-    id uuid,
-    id_customer uuid,
-    name_customer text,
-    products set<frozen<tuple<text,int,double, double>>>,//producto, cantidad, precio, semitotal
-    total int,
-    date timestamp,
-    id_vale uuid,
-    branch int,
-    PRIMARY KEY(id)
-);
- */
-/* **************************************************EXPERIMENTAL******************************************** */
+/* 
+GET REQUESTS
+* getproducts by branch                 /:branch/products
+* getproducts by branch and category    /:branch/products/:category
+*/
 
-/* Customers */
+/* 
+PUT REQUESTS
+* 
+* 
+*/
 
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);

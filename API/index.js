@@ -14,7 +14,8 @@ app.use(cors());
 const PORT = process.env.PORT || 5000;
 
 const client = new cassandra.Client({
-  contactPoints: ["172.18.0.2"],
+  // 172.23.0.2
+  contactPoints: ["172.23.0.2"],
   keyspace: "restaurant_keyspace",
   localDataCenter: "DC1",
 });
@@ -330,26 +331,6 @@ app.post("/signUp", async (req, res) => {
 
 /* FACTURE */
 
-//helper function
-// const update_stocks = async (products) => {
-//   let queries = [];
-//   for (let i = 0; i < products.length; ++i) {
-//     let { stock, branch, category, id, quantity } = products[i];
-//     queries.push({
-//       query:
-//         "UPDATE product_by_branch SET stock = ? where branch = ? and category = ? and id = ?",
-//       params: [stock - quantity, branch, category, id],
-//     });
-//   }
-//   try {
-//     result = await client.execute(queries, { prepare: true });
-//     console.log(result);
-//     return { result: "Product stock updated", error: null };
-//   } catch (err) {
-//     return { result: null, error: err };
-//   }
-// };
-
 app.post("/add-facture/", async (req, res) => {
   const {
     id_customer,
@@ -409,13 +390,31 @@ app.post("/add-facture/", async (req, res) => {
   queries.unshift({ query: query1, params: params1 });
   console.log(queries);
   try {
-    result = await client.batch(queries, { prepare: true });
+    result = await client.batch(queries, {
+      prepare: true,
+      consistency: cassandra.types.consistencies.quorum,
+    });
     res.json({ result: true, error: null });
   } catch (err) {
     console.log(err);
-    res.json({ hello: true, error: null });
+    res.json({ result: null, error: err });
   }
 });
+
+/* reservation */
+// make a reservation
+//  parameters:
+/* 
+create table reservation_by_branch_and_id(
+    id                  uuid,
+    reservation_date    date,
+    hour                time,
+    id_mesa             uuid,
+    id_customer         uuid,
+    branch              int,
+    PRIMARY KEY(branch,id)
+);
+*/
 
 /* 
 GET REQUESTS
@@ -423,11 +422,60 @@ GET REQUESTS
 * getproducts by branch and category    /:branch/products/:category
 */
 
+// get tables AVAILABLE  order = available ,branch, id
+app.get("/:branch/available-tables", async (req, res) => {
+  const { branch } = req.params;
+  console.log("Restaurant:", branch);
+  const query =
+    "select * from table_by_id_and_availability where available = True and branch = ?";
+  try {
+    result = await client.execute(query, [branch], { prepare: true });
+    res.json({ tables: result.rows, error: null });
+    console.log("Ok");
+  } catch (err) {
+    res.json({ tables: null, error: err });
+    console.log("Not ok");
+  }
+});
+
+// get ALL tables
+app.get("/:branch/tables", async (req, res) => {
+  const { branch } = req.params;
+  console.log("Restaurant:", branch);
+  const query = "SELECT * FROM table_by_branch WHERE branch = ? ";
+  try {
+    result = await client.execute(query, [branch], { prepare: true });
+    res.json({ tables: result.rows, error: null });
+    console.log("Ok");
+  } catch (err) {
+    res.json({ tables: null, error: err });
+    console.log("Not ok");
+  }
+});
+
 /* 
 PUT REQUESTS
 * 
 * 
 */
+// updates available to False or True
+app.put("/:branch/update-table/:id/", async (req, res) => {
+  const { branch, id } = req.params;
+  const { available } = req.body;
+  const query =
+    "UPDATE table_by_branch SET available = ? where branch = ? and id = ?";
+  const params = [available, branch, id];
+  try {
+    result = await client.execute(query, params, { prepare: true });
+    res.json({ result: "table updated", error: null });
+    console.log(result);
+  } catch (err) {
+    res.json({ result: null, error: err });
+    console.log(err);
+  }
+});
+
+// update table set AVAILABLE to FALSE or TRUE
 
 app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);

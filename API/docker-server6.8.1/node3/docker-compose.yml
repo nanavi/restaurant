@@ -1,0 +1,18 @@
+version: "3"
+services:
+  dse-s3:
+    image: datastax/dse-server:6.8.1
+    container_name: dse-s3
+    hostname: dse-s3
+    environment:
+      - DS_LICENSE=accept
+      - SEEDS=192.168.0.10
+      - CLUSTER_NAME=data_center_1
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=1024M
+      - JVM_OPTS=-Xms512M -Xmx512M
+      - DC=DC1
+      - RACK=RAC1
+    ports:
+      - "9043:9042"
+      - "7001:7000"

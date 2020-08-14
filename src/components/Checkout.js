@@ -98,7 +98,6 @@ export default function Checkout(props) {
       let res_ = await res.json();
       console.log(res_);
       if (res_.error) throw res_.error;
-      //   setUser(res_.user);
     } catch (err) {
       console.log(err);
       console.log(order);

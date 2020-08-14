@@ -50,7 +50,7 @@ create table reservation_by_branch_and_id(
     id                  uuid,
     reservation_date    date,
     hour                time,
-    id_mesa         list<uuid>,
+    id_mesa             uuid,
     id_customer         uuid,
     branch              int,
     PRIMARY KEY(branch,id)

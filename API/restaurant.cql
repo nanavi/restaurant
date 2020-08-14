@@ -1,4 +1,4 @@
-CREATE KEYSPACE restaurant_keyspace WITH replication = { 'class': 'SimpleStrategy','replication_factor': 3 } AND durable_writes = 'true';
+CREATE KEYSPACE restaurant_keyspace WITH replication = { 'class': 'SimpleStrategy','replication_factor': 2 } AND durable_writes = 'true';
 
 USE restaurant_keyspace;
 
@@ -27,8 +27,9 @@ create table product_by_branch (
     branch int,
     price int,
     image text,
-    primary key(branch, category, description)
+    primary key(branch, category, id)
 );
+//changes description is not an ID anymore -> `id` is id
 
 //SKIPPPPED ==========================================
 create materialized view restaurant_keyspace.product_by_price
@@ -89,7 +90,7 @@ create table factura_by_id(
     id uuid,
     id_customer uuid,
     name_customer text,
-    products set<frozen<tuple<text,int,double, double>>>,
+    products set<frozen<tuple<text,int,double, double>>>,//producto, cantidad, precio, semitotal
     total int,
     date timestamp,
     id_vale uuid,
@@ -145,7 +146,6 @@ where id is not null and
 id_customer is not null and
 branch is not null
 primary key(id_customer, branch,id);
-
 
 create table vale(
     id uuid,
